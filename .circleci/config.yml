@@ -37,7 +37,7 @@ jobs:
     steps:
         - run: 
             name: "Printing my name"
-            command: "echo ${myName}"
+            command: echo ${myName}
 
 
 # Invoke jobs via workflows
