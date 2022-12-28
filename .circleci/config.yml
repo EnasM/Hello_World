@@ -73,20 +73,55 @@ jobs:
             command: echo "Job failed"
             when: on_fail
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+  build:
+         docker:
+            - image: circleci/node:13.8.0
+         steps:
+            - checkout
+            - run: npm i
+            - save_cache:
+                  paths:
+                      - src/node_modules
+                  key: "npm-packages"
+            - run: npm run lint
+  test:
+        docker:
+            - image: circleci/node:13.8.0
+        steps:
+            - checkout
+            - restore_cache:
+                keys:
+                    - "npm-packages" 
+            - run: npm i
+            - run: npm run test
+  analyze:
+    docker:
+    - image: circleci/node:13.8.0
+    steps:
+    - checkout
+    - restore_cache:
+        keys:
+            - "npm-packages"
+    - run: npm audit
 workflows:
   say-hello-workflow:
     jobs:
-      - say-hello
-      - print_hello
-      - print_world:
-            requires: 
-                - print_hello
-      - print_my_name
-      - save_hello_world_output
-      - print_output_file:
-            requires:
-                - save_hello_world_output
-      - print_pipeline_id_Command
-      - onFailJob
+      #- say-hello
+      #- print_hello
+      #- print_world:
+      #      requires: 
+      #          - print_hello
+      #- print_my_name
+      #- save_hello_world_output
+      #- print_output_file:
+      #      requires:
+      #          - save_hello_world_output
+      #- print_pipeline_id_Command
+      #- onFailJob
+    - build
+    - test:
+        requires:
+        - build
+    - analyze:
+        requires:
+            - test 
